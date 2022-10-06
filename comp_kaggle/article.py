@@ -17,13 +17,14 @@ df.columns = df.columns.str.lower().str.strip().str.replace(' ', '_')
 
 df['gender'] = df.expected.str.split(' ').str[0].astype(int)
 df['accent'] = df.expected.str.split(' ').str[1].astype(int)
+df['target'] = df.ge
 df.drop('expected', axis=1, inplace=True)
 
 # Construct file path by concatenating fold and file name
 df['relative_path'] =  '\\' + df['id'].astype(str)
-
+df['target'] = (df['gender']+1) * (df['accent']-2)
 # Take relevant columns
-df = df[['relative_path', 'accent']]
+df = df[['relative_path', 'target']]
 df.head()
 
 
@@ -199,7 +200,7 @@ class SoundDS(Dataset):
     # the relative path
     audio_file = self.data_path + self.dataframe.loc[idx, 'relative_path']
     # Get the Class ID
-    class_id = self.dataframe.loc[idx, 'accent']
+    class_id = self.dataframe.loc[idx, 'target']
 
     aud = AudioUtil.open(audio_file)
     # Some sounds have a higher sample rate, or fewer channels compared to the
