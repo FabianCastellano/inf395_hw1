@@ -215,7 +215,7 @@ class SoundDS(Dataset):
     shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
     sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=None)
     aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
-
+    print(aug_sgram)
     return aug_sgram, class_id
 
 
@@ -228,6 +228,8 @@ data_path = download_path/'Train'
 
 
 myds = SoundDS(df, data_path)
+
+print(myds.__getitem__)
 
 # Random split of 80:20 between training and validation
 num_items = len(myds)
