@@ -1,8 +1,3 @@
-# ----------------------------
-# Prepare training data from Metadata file
-# ----------------------------
-import pandas as pd
-from pathlib import Path
 
 import pandas as pd
 from pathlib import Path
@@ -10,22 +5,25 @@ from pathlib import Path
 
 download_path = Path.cwd()/'data'
 
+
 # Read metadata file
+from sklearn import preprocessing
+le = preprocessing.LabelEncoder()
+le.fit(['0 2', '0 3', '0 4', '0 5', '0 6', '1 2', '1 3', '1 4', '1 5', '1 6'])
+
 metadata_file = download_path/'Train.csv'
 df = pd.read_csv(metadata_file)
 df.columns = df.columns.str.lower().str.strip().str.replace(' ', '_')
 
-df['gender'] = df.expected.str.split(' ').str[0].astype(int)
-df['accent'] = df.expected.str.split(' ').str[1].astype(int)
-df['target'] = df.ge
+df['target'] = le.transform(df['expected'])
 df.drop('expected', axis=1, inplace=True)
+
 
 # Construct file path by concatenating fold and file name
 df['relative_path'] =  '\\' + df['id'].astype(str)
-df['target'] = (df['gender']+1) * (df['accent']-2)
+
 # Take relevant columns
 df = df[['relative_path', 'target']]
-df.head()
 
 
 # ----------------------------
@@ -215,7 +213,6 @@ class SoundDS(Dataset):
     shift_aud = AudioUtil.time_shift(dur_aud, self.shift_pct)
     sgram = AudioUtil.spectro_gram(shift_aud, n_mels=64, n_fft=1024, hop_len=None)
     aug_sgram = AudioUtil.spectro_augment(sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
-    print(aug_sgram)
     return aug_sgram, class_id
 
 
@@ -229,14 +226,14 @@ data_path = download_path/'Train'
 
 myds = SoundDS(df, data_path)
 
-print(myds.__getitem__)
+
 
 # Random split of 80:20 between training and validation
 num_items = len(myds)
 num_train = round(num_items * 0.8)
 num_val = num_items - num_train
 train_ds, val_ds = random_split(myds, [num_train, num_val])
-
+print(len(train_ds), len(val_ds))
 # Create training and validation data loaders
 
 train_dl = torch.utils.data.DataLoader(train_ds, batch_size=16, shuffle=True)
@@ -393,6 +390,7 @@ def inference (model, val_dl):
 
   # Disable gradient updates
   with torch.no_grad():
+
     for data in val_dl:
       # Get the input features and target labels, and put them on the GPU
       inputs, labels = data[0].to(device), data[1].to(device)
