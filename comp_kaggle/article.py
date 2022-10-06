@@ -181,7 +181,7 @@ class SoundDS(Dataset):
     self.data_path = str(data_path)
     self.duration = 4000
     self.sr = 44100
-    self.channel = 2
+    self.channel = 1
     self.shift_pct = 0.4
             
   # ----------------------------
@@ -228,12 +228,11 @@ myds = SoundDS(df, data_path)
 
 
 
-# Random split of 80:20 between training and validation
+# Random split of 80:20 between training and idation
 num_items = len(myds)
 num_train = round(num_items * 0.8)
 num_val = num_items - num_train
 train_ds, val_ds = random_split(myds, [num_train, num_val])
-print(len(train_ds), len(val_ds))
 # Create training and validation data loaders
 
 train_dl = torch.utils.data.DataLoader(train_ds, batch_size=16, shuffle=True)
@@ -256,7 +255,7 @@ class AudioClassifier (nn.Module):
         conv_layers = []
 
         # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
-        self.conv1 = nn.Conv2d(2, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
         self.relu1 = nn.ReLU()
         self.bn1 = nn.BatchNorm2d(8)
         init.kaiming_normal_(self.conv1.weight, a=0.1)
@@ -376,7 +375,7 @@ def training(model, train_dl, num_epochs):
 
   print('Finished Training')
   
-num_epochs=7   # Just for demo, adjust this higher.
+num_epochs=20   # Just for demo, adjust this higher.
 training(myModel, train_dl, num_epochs)\
 
 
